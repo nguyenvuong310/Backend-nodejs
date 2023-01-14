@@ -25,6 +25,7 @@ let createNewUser = async (data) => {
   //   console.log(data);
   //   console.log(hashPasswordFromBrcypt);
 };
+
 let hashUserPassword = (password) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -35,7 +36,60 @@ let hashUserPassword = (password) => {
     }
   });
 };
+let getAllUser = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let user = db.User.findAll({
+        raw: true,
+      });
+      resolve(user);
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
 
+let getUserInforById = (userId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let user = await db.User.findOne({
+        where: { id: userId },
+        raw: true,
+      });
+      if (user) {
+        resolve(user);
+      } else {
+        resolve([]);
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
+let updateUserData = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let user = await db.User.findOne({
+        // find row has id = data.id
+        where: { id: data.id },
+      });
+      if (user) {
+        // if found user
+        // gan fisrtname, lastName, address cũ bằng cái mới
+        user.firstName = data.firstName;
+        user.lastName = data.lastName;
+        user.address = data.address;
+        await user.save();
+        resolve();
+      }
+    } catch (error) {
+      console.log(error);
+    }
+  });
+};
 module.exports = {
   createNewUser: createNewUser,
+  getAllUser: getAllUser,
+  getUserInforById: getUserInforById,
+  updateUserData: updateUserData,
 };
