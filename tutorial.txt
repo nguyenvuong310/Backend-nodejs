@@ -1,3 +1,0 @@
-("name dùng để req.body kiếm được vd (name = "id" , req.body se co duoc gia trị name)
-link tham khảo : https://sequelize.org/docs/v6/
-                https://www.youtube.com/watch?v=OvtT3pafVl4&list=PLncHg6Kn2JT6E38Z3kit9Hnif1xC_9VqI&index=36    
