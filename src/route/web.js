@@ -12,7 +12,12 @@ let initWebRoutes = (app) => {
   router.get("/edit-crud", homeController.editCRUD);
   router.post("/put-crud", homeController.putCRUD);
   router.get("/del-crud", homeController.delCRUD);
+
   router.post("/api/login", UserController.handleLogin);
+  router.get("/api/get-all-users", UserController.handleGetAllUsers);
+  router.post("/api/create-new-user", UserController.handleCreateNewUser);
+  router.put("/api/edit-user", UserController.handleEditUser);
+  router.delete("/api/del-user", UserController.handleDelUser); //restAPI
   return app.use("/", router);
 };
 
