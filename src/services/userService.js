@@ -99,24 +99,25 @@ let createNewUser = (data) => {
       if (check === true) {
         resolve({
           errCode: 1,
-          message: "Your email is already used, Pls try other email ",
+          errMessage: "Your email is already used, Pls try other email ",
+        });
+      } else {
+        let hashPasswordFromBrcypt = await hashUserPassword(data.password);
+        await db.User.create({
+          email: data.email,
+          password: hashPasswordFromBrcypt,
+          firstName: data.firstName,
+          lastName: data.lastName,
+          address: data.address,
+          gender: data.gender === "1" ? true : false,
+          roleId: data.roleId,
+          phoneNumber: data.phoneNumber,
+        });
+        resolve({
+          errCode: 0,
+          errMessage: "ok",
         });
       }
-      let hashPasswordFromBrcypt = await hashUserPassword(data.password);
-      await db.User.create({
-        email: data.email,
-        password: hashPasswordFromBrcypt,
-        firstName: data.firstName,
-        lastName: data.lastName,
-        address: data.address,
-        gender: data.gender === "1" ? true : false,
-        roleId: data.roleId,
-        phoneNumber: data.phoneNumber,
-      });
-      resolve({
-        errCode: 0,
-        message: "ok",
-      });
     } catch (error) {
       reject(error);
     }
@@ -130,13 +131,13 @@ let deleteUser = (userId) => {
     if (!user) {
       resolve({
         errCode: 2,
-        message: "The user not exist",
+        errMessage: "The user not exist",
       });
     } else {
       user.destroy();
       resolve({
         errCode: 0,
-        message: "The user is deleted",
+        errMessage: "The user is deleted",
       });
     }
   });
@@ -176,10 +177,33 @@ let updateUserData = (data) => {
     }
   });
 };
+let getAllCodeService = (typeInput) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!typeInput) {
+        resolve({
+          errCode: 1,
+          errMessage: "Missing required parameter",
+        });
+      } else {
+        let res = {};
+        let allcode = await db.allCode.findAll({
+          where: { type: typeInput },
+        });
+        res.errCode = 0;
+        res.data = allcode;
+        resolve(res);
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
 module.exports = {
   handleUserLogin: handleUserLogin,
   getAllUsers: getAllUsers,
   createNewUser: createNewUser,
   deleteUser: deleteUser,
   updateUserData: updateUserData,
+  getAllCodeService: getAllCodeService,
 };

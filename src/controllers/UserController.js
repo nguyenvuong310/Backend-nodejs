@@ -1,3 +1,4 @@
+import req from "express/lib/request";
 import userService from "../services/userService";
 let handleLogin = async (req, res) => {
   let email = req.body.email;
@@ -53,10 +54,25 @@ let handleDelUser = async (req, res) => {
   let message = await userService.deleteUser(req.body.id);
   return res.status(200).json({ message });
 };
+let getAllCode = async (req, res) => {
+  try {
+    let data = await userService.getAllCodeService(req.query.type);
+    return res.status(200).json({
+      data,
+    });
+  } catch (error) {
+    console.log("get all code ", error);
+    return res.status(200).json({
+      errCode: -1,
+      errMessage: "error from server",
+    });
+  }
+};
 module.exports = {
   handleLogin: handleLogin,
   handleGetAllUsers: handleGetAllUsers,
   handleCreateNewUser: handleCreateNewUser,
   handleEditUser: handleEditUser,
   handleDelUser: handleDelUser,
+  getAllCode: getAllCode,
 };
