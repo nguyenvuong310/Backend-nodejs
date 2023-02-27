@@ -10,7 +10,7 @@ let handleUserLogin = (email, password) => {
       if (isExist) {
         let user = await db.User.findOne({
           where: { email: email },
-          attributes: ["email", "password", "roleId"],
+          attributes: ["email", "password", "roleId", "firstName", "lastName"],
           raw: true,
         });
         if (user) {
@@ -109,9 +109,10 @@ let createNewUser = (data) => {
           firstName: data.firstName,
           lastName: data.lastName,
           address: data.address,
-          gender: data.gender === "1" ? true : false,
+          gender: data.gender,
           roleId: data.roleId,
           phoneNumber: data.phoneNumber,
+          positionId: data.position,
         });
         resolve({
           errCode: 0,
