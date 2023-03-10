@@ -1,4 +1,3 @@
-import req from "express/lib/request";
 import db from "../models/index";
 import CRUDservice from "../services/CRUDservice";
 let getHomePage = async (req, res) => {

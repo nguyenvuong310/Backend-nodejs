@@ -2,6 +2,7 @@ import express from "express";
 import req from "express/lib/request";
 import homeController from "../controllers/homeController";
 import UserController from "../controllers/UserController";
+import DoctorController from "../controllers/DoctorController";
 let router = express.Router();
 
 let initWebRoutes = (app) => {
@@ -18,8 +19,9 @@ let initWebRoutes = (app) => {
   router.post("/api/create-new-user", UserController.handleCreateNewUser);
   router.put("/api/edit-user", UserController.handleEditUser);
   router.delete("/api/del-user", UserController.handleDelUser); //restAPI
-
   router.get("/api/allcode", UserController.getAllCode);
+
+  router.get("/api/top-doctor", DoctorController.getTopDoctor);
   return app.use("/", router);
 };
 

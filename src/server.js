@@ -8,7 +8,7 @@ require("dotenv").config();
 
 let app = express();
 app.use(cors({ credentials: true, origin: true }));
-
+// bodyParser giup lay data tu client to server
 app.use(bodyParser.json({ limit: "50mb" }));
 app.use(bodyParser.urlencoded({ limit: "50mb", extended: true }));
 
