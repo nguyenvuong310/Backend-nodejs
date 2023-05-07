@@ -18,9 +18,11 @@ module.exports = {
         type: Sequelize.TEXT("long"),
       },
       contentHTML: {
+        allowNull: false,
         type: Sequelize.TEXT("long"),
       },
       contentMarkdown: {
+        allowNull: false,
         type: Sequelize.TEXT("long"),
       },
       doctorId: {

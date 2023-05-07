@@ -34,6 +34,58 @@ let getTopDoctorService = (limit) => {
     }
   });
 };
+let getAllDoctors = () => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let doctors = await db.User.findAll({
+        where: { roleId: "R2" },
+        attributes: {
+          exclude: ["password", "image"],
+        },
+      });
+      resolve({
+        errCode: 0,
+        data: doctors,
+      });
+    } catch (error) {
+      reject(e);
+    }
+  });
+};
+let postInforDoctorService = (inputData) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (
+        !inputData.doctorId ||
+        !inputData.contentHTML ||
+        !inputData.contentMarkdown
+      ) {
+        resolve({
+          errCode: 1,
+          errMessage: "Missing parameter",
+        });
+      } else {
+        await db.markdown.create({
+          intro: inputData.intro,
+          contentHTML: inputData.contentHTML,
+          contentMarkdown: inputData.contentMarkdown,
+          doctorId: inputData.doctorId,
+          // specialtyId: inputData.specialtyId,
+          // clinicId: inputData.clinicId,
+        });
+      }
+
+      resolve({
+        errCode: 0,
+        errMessage: "Save succeed",
+      });
+    } catch (error) {
+      reject(e);
+    }
+  });
+};
 module.exports = {
   getTopDoctorService: getTopDoctorService,
+  getAllDoctors: getAllDoctors,
+  postInforDoctorService: postInforDoctorService,
 };
