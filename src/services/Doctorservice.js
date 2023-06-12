@@ -1,3 +1,4 @@
+import { raw } from "body-parser";
 import db from "../models";
 let getTopDoctorService = (limit) => {
   return new Promise(async (resolve, reject) => {
@@ -58,21 +59,36 @@ let postInforDoctorService = (inputData) => {
       if (
         !inputData.doctorId ||
         !inputData.contentHTML ||
-        !inputData.contentMarkdown
+        !inputData.contentMarkdown ||
+        !inputData.actions
       ) {
         resolve({
           errCode: 1,
           errMessage: "Missing parameter",
         });
       } else {
-        await db.markdown.create({
-          intro: inputData.intro,
-          contentHTML: inputData.contentHTML,
-          contentMarkdown: inputData.contentMarkdown,
-          doctorId: inputData.doctorId,
-          // specialtyId: inputData.specialtyId,
-          // clinicId: inputData.clinicId,
-        });
+        if (inputData.actions === "CREATE") {
+          await db.markdown.create({
+            intro: inputData.intro,
+            contentHTML: inputData.contentHTML,
+            contentMarkdown: inputData.contentMarkdown,
+            doctorId: inputData.doctorId,
+            // specialtyId: inputData.specialtyId,
+            // clinicId: inputData.clinicId,
+          });
+        } else {
+          let doctorMarkdown = await db.markdown.findOne({
+            where: { doctorId: inputData.doctorId },
+          });
+          if (doctorMarkdown) {
+            doctorMarkdown.intro = inputData.intro;
+            doctorMarkdown.contentHTML = inputData.contentHTML;
+            doctorMarkdown.contentMarkdown = inputData.contentMarkdown;
+            doctorMarkdown.doctorId = inputData.doctorId;
+            doctorMarkdown.updateAt = new Date();
+          }
+          await doctorMarkdown.save();
+        }
       }
 
       resolve({
@@ -84,8 +100,45 @@ let postInforDoctorService = (inputData) => {
     }
   });
 };
+let getInforDoctorService = (inputId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!inputId) {
+        resolve({
+          errCode: 1,
+          errMessage: "missing parameter",
+        });
+      } else {
+        let data = await db.User.findOne({
+          where: { id: inputId },
+          attributes: {
+            exclude: ["password"],
+          },
+          include: [
+            {
+              model: db.markdown,
+              attributes: ["contentMarkdown", "contentHTML", "intro"],
+            },
+          ],
+          raw: true,
+          nest: true,
+        });
+        if (data && data.image) {
+          data.image = new Buffer.from(data.image, "base64").toString("binary");
+        }
+        resolve({
+          errCode: 0,
+          data,
+        });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
 module.exports = {
   getTopDoctorService: getTopDoctorService,
   getAllDoctors: getAllDoctors,
   postInforDoctorService: postInforDoctorService,
+  getInforDoctorService: getInforDoctorService,
 };
