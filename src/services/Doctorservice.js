@@ -1,5 +1,7 @@
-import { raw } from "body-parser";
 import db from "../models";
+import _ from "lodash";
+require("dotenv").config();
+const MAX_NUMBER_SCHEDULE = process.env.MAX_NUMBER_SCHEDULE;
 let getTopDoctorService = (limit) => {
   return new Promise(async (resolve, reject) => {
     try {
@@ -136,9 +138,48 @@ let getInforDoctorService = (inputId) => {
     }
   });
 };
+let bulkCreateScheduleService = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      let dataCopy = [];
+      if (data && data.arrSchedule && data.arrSchedule.length > 0) {
+        dataCopy = data.arrSchedule;
+        dataCopy = dataCopy.map((item) => {
+          item.maxNumber = MAX_NUMBER_SCHEDULE;
+          return item;
+        });
+        let exists = await db.schedule.findAll({
+          where: { doctorId: data.doctorId, date: data.formatedDate },
+          attributes: ["timeType", "date", "doctorId", "maxNumber"],
+          raw: true,
+        });
+        if (exists && exists.length > 0) {
+          exists = exists.map((item) => {
+            item.date = new Date(item.date).getTime();
+            return item;
+          });
+        }
+        let toCreate = _.differenceWith(dataCopy, exists, (a, b) => {
+          return a.timeType === b.timeType && a.date === b.date;
+        });
+        if (toCreate && toCreate.length > 0) {
+          await db.schedule.bulkCreate(toCreate);
+        }
+
+        resolve({
+          errCode: 0,
+          errMessage: "succeed!",
+        });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
 module.exports = {
   getTopDoctorService: getTopDoctorService,
   getAllDoctors: getAllDoctors,
   postInforDoctorService: postInforDoctorService,
   getInforDoctorService: getInforDoctorService,
+  bulkCreateScheduleService: bulkCreateScheduleService,
 };
