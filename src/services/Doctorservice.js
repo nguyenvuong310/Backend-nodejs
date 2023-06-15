@@ -69,6 +69,7 @@ let postInforDoctorService = (inputData) => {
           errMessage: "Missing parameter",
         });
       } else {
+        console.log("check actions", inputData.actions);
         if (inputData.actions === "CREATE") {
           await db.markdown.create({
             intro: inputData.intro,
@@ -88,8 +89,8 @@ let postInforDoctorService = (inputData) => {
             doctorMarkdown.contentMarkdown = inputData.contentMarkdown;
             doctorMarkdown.doctorId = inputData.doctorId;
             doctorMarkdown.updateAt = new Date();
+            await doctorMarkdown.save();
           }
-          await doctorMarkdown.save();
         }
       }
 
@@ -98,7 +99,7 @@ let postInforDoctorService = (inputData) => {
         errMessage: "Save succeed",
       });
     } catch (error) {
-      reject(e);
+      reject(error);
     }
   });
 };
@@ -153,15 +154,18 @@ let bulkCreateScheduleService = (data) => {
           attributes: ["timeType", "date", "doctorId", "maxNumber"],
           raw: true,
         });
-        if (exists && exists.length > 0) {
-          exists = exists.map((item) => {
-            item.date = new Date(item.date).getTime();
-            return item;
-          });
-        }
+        // console.log("check exists", exists);
+        // console.log("check data", dataCopy);
+        // if (exists && exists.length > 0) {
+        //   exists = exists.map((item) => {
+        //     item.date = new Date(item.date).getTime();
+        //     return item;
+        //   });
+        // }
         let toCreate = _.differenceWith(dataCopy, exists, (a, b) => {
           return a.timeType === b.timeType && a.date === b.date;
         });
+        console.log("tocreate", toCreate);
         if (toCreate && toCreate.length > 0) {
           await db.schedule.bulkCreate(toCreate);
         }
@@ -176,10 +180,43 @@ let bulkCreateScheduleService = (data) => {
     }
   });
 };
+let getScheduleByDayService = (doctorId, date) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!doctorId || !date) {
+        resolve({
+          errCode: 1,
+          errMessage: "missing parameter",
+        });
+      } else {
+        let dataSchedule = await db.schedule.findAll({
+          where: { doctorId: doctorId, date: date },
+          include: [
+            {
+              model: db.allCode,
+              as: "timeData",
+              attributes: ["valueEn", "valueVi"],
+            },
+          ],
+        });
+        if (!dataSchedule) {
+          dataSchedule = [];
+        }
+        resolve({
+          errCode: 0,
+          data: dataSchedule,
+        });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
 module.exports = {
   getTopDoctorService: getTopDoctorService,
   getAllDoctors: getAllDoctors,
   postInforDoctorService: postInforDoctorService,
   getInforDoctorService: getInforDoctorService,
   bulkCreateScheduleService: bulkCreateScheduleService,
+  getScheduleByDayService,
 };
