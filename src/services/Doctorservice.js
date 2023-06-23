@@ -62,7 +62,13 @@ let postInforDoctorService = (inputData) => {
         !inputData.doctorId ||
         !inputData.contentHTML ||
         !inputData.contentMarkdown ||
-        !inputData.actions
+        !inputData.actions ||
+        !inputData.priceId ||
+        !inputData.paymentId ||
+        !inputData.provinceId ||
+        !inputData.note ||
+        !inputData.addressClinic ||
+        !inputData.nameClinic
       ) {
         resolve({
           errCode: 1,
@@ -91,6 +97,31 @@ let postInforDoctorService = (inputData) => {
             doctorMarkdown.updateAt = new Date();
             await doctorMarkdown.save();
           }
+        }
+        //upsert doctor infor table
+        let doctorInfor = await db.doctorInfor.findOne({
+          where: { doctorId: inputData.doctorId },
+        });
+        if (doctorInfor) {
+          doctorInfor.doctorId = inputData.doctorId;
+          doctorInfor.paymentId = inputData.paymentId;
+          doctorInfor.priceId = inputData.priceId;
+          doctorInfor.provinceId = inputData.provinceId;
+          doctorInfor.note = inputData.note;
+          doctorInfor.addressClinic = inputData.addressClinic;
+          doctorInfor.nameClinic = inputData.nameClinic;
+          doctorInfor.updateAt = new Date();
+          await doctorInfor.save();
+        } else {
+          await db.doctorInfor.create({
+            doctorId: inputData.doctorId,
+            paymentId: inputData.paymentId,
+            priceId: inputData.priceId,
+            provinceId: inputData.provinceId,
+            note: inputData.note,
+            addressClinic: inputData.addressClinic,
+            nameClinic: inputData.nameClinic,
+          });
         }
       }
 
@@ -165,7 +196,7 @@ let bulkCreateScheduleService = (data) => {
         let toCreate = _.differenceWith(dataCopy, exists, (a, b) => {
           return a.timeType === b.timeType && a.date === b.date;
         });
-        console.log("tocreate", toCreate);
+        // console.log("tocreate", toCreate);
         if (toCreate && toCreate.length > 0) {
           await db.schedule.bulkCreate(toCreate);
         }
