@@ -153,6 +153,26 @@ let getInforDoctorService = (inputId) => {
               model: db.markdown,
               attributes: ["contentMarkdown", "contentHTML", "intro"],
             },
+            {
+              model: db.doctorInfor,
+              include: [
+                {
+                  model: db.allCode,
+                  as: "priceData",
+                  attributes: ["valueEn", "valueVi"],
+                },
+                {
+                  model: db.allCode,
+                  as: "paymentData",
+                  attributes: ["valueEn", "valueVi"],
+                },
+                {
+                  model: db.allCode,
+                  as: "provinceData",
+                  attributes: ["valueEn", "valueVi"],
+                },
+              ],
+            },
           ],
           raw: true,
           nest: true,
@@ -243,6 +263,50 @@ let getScheduleByDayService = (doctorId, date) => {
     }
   });
 };
+let getExtraInforDoctorService = (inputDoctorId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!inputDoctorId) {
+        resolve({
+          errCode: 1,
+          errMessage: "missing parameter",
+        });
+      } else {
+        let extraInfo = await db.doctorInfor.findOne({
+          where: { doctorId: inputDoctorId },
+          include: [
+            {
+              model: db.allCode,
+              as: "priceData",
+              attributes: ["valueEn", "valueVi"],
+            },
+            {
+              model: db.allCode,
+              as: "paymentData",
+              attributes: ["valueEn", "valueVi"],
+            },
+            {
+              model: db.allCode,
+              as: "provinceData",
+              attributes: ["valueEn", "valueVi"],
+            },
+          ],
+          // raw: true,
+          // nest: true,
+        });
+        if (!extraInfo) extraInfo = {};
+        else {
+          resolve({
+            errCode: 0,
+            data: extraInfo,
+          });
+        }
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
 module.exports = {
   getTopDoctorService: getTopDoctorService,
   getAllDoctors: getAllDoctors,
@@ -250,4 +314,5 @@ module.exports = {
   getInforDoctorService: getInforDoctorService,
   bulkCreateScheduleService: bulkCreateScheduleService,
   getScheduleByDayService,
+  getExtraInforDoctorService,
 };
