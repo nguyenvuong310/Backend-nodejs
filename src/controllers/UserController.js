@@ -67,6 +67,20 @@ let getAllCode = async (req, res) => {
     });
   }
 };
+let bookAppointment = async (req, res) => {
+  try {
+    let data = await userService.bookAppointmentService(req.body);
+    return res.status(200).json({
+      data,
+    });
+  } catch (error) {
+    console.log("book appoiment error ", error);
+    return res.status(200).json({
+      errCode: -1,
+      errMessage: "error from server",
+    });
+  }
+};
 module.exports = {
   handleLogin: handleLogin,
   handleGetAllUsers: handleGetAllUsers,
@@ -74,4 +88,5 @@ module.exports = {
   handleEditUser: handleEditUser,
   handleDelUser: handleDelUser,
   getAllCode: getAllCode,
+  bookAppointment,
 };

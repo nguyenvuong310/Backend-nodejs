@@ -274,6 +274,9 @@ let getExtraInforDoctorService = (inputDoctorId) => {
       } else {
         let extraInfo = await db.doctorInfor.findOne({
           where: { doctorId: inputDoctorId },
+          attributes: {
+            exclude: ["password"],
+          },
           include: [
             {
               model: db.allCode,
@@ -307,6 +310,67 @@ let getExtraInforDoctorService = (inputDoctorId) => {
     }
   });
 };
+let getProfileDoctorService = (inputId) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!inputId) {
+        resolve({
+          errCode: 1,
+          errMessage: "missing parameter",
+        });
+      } else {
+        let profileDoctor = await db.User.findOne({
+          where: { id: inputId },
+          attributes: {
+            exclude: ["password"],
+          },
+          include: [
+            {
+              model: db.markdown,
+              attributes: ["contentMarkdown", "contentHTML", "intro"],
+            },
+            {
+              model: db.doctorInfor,
+              include: [
+                {
+                  model: db.allCode,
+                  as: "priceData",
+                  attributes: ["valueEn", "valueVi"],
+                },
+                {
+                  model: db.allCode,
+                  as: "paymentData",
+                  attributes: ["valueEn", "valueVi"],
+                },
+                {
+                  model: db.allCode,
+                  as: "provinceData",
+                  attributes: ["valueEn", "valueVi"],
+                },
+              ],
+            },
+          ],
+          // raw: false,
+          // nest: true,
+        });
+
+        // if (!profileDoctor) profileDoctor = {};
+        if (profileDoctor && profileDoctor.image) {
+          profileDoctor.image = new Buffer.from(
+            profileDoctor.image,
+            "base64"
+          ).toString("binary");
+        }
+        resolve({
+          errCode: 0,
+          data: profileDoctor,
+        });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
 module.exports = {
   getTopDoctorService: getTopDoctorService,
   getAllDoctors: getAllDoctors,
@@ -315,4 +379,5 @@ module.exports = {
   bulkCreateScheduleService: bulkCreateScheduleService,
   getScheduleByDayService,
   getExtraInforDoctorService,
+  getProfileDoctorService,
 };

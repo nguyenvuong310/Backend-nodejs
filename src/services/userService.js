@@ -1,3 +1,4 @@
+import { defaults } from "lodash";
 import db from "../models";
 import bcrypt from "bcryptjs";
 const salt = bcrypt.genSaltSync(10);
@@ -206,7 +207,41 @@ let getAllCodeService = (typeInput) => {
     }
   });
 };
-
+let bookAppointmentService = (data) => {
+  return new Promise(async (resolve, reject) => {
+    try {
+      if (!data.email) {
+        resolve({
+          errCode: 1,
+          errMessage: "Missing parameter",
+        });
+      } else {
+        const [user, created] = await db.User.findOrCreate({
+          where: { email: data.email },
+          defaults: {
+            email: data.email,
+            roleId: "R3",
+          },
+        });
+        if (user) {
+          await db.booking.create({
+            statusId: "S1",
+            doctorId: data.doctorId,
+            patientId: user.id,
+            date: data.date,
+            timeType: data.timeType,
+          });
+        }
+        resolve({
+          errCode: 0,
+          errMessage: "Save hiden infor user succeed",
+        });
+      }
+    } catch (error) {
+      reject(error);
+    }
+  });
+};
 module.exports = {
   handleUserLogin: handleUserLogin,
   getAllUsers: getAllUsers,
@@ -214,4 +249,5 @@ module.exports = {
   deleteUser: deleteUser,
   updateUserData: updateUserData,
   getAllCodeService: getAllCodeService,
+  bookAppointmentService,
 };
